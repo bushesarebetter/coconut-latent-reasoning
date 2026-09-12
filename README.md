@@ -1,3 +1,5 @@
+[![Tests](https://github.com/bushesarebetter/coconut-latent-reasoning/actions/workflows/tests.yml/badge.svg)](https://github.com/bushesarebetter/coconut-latent-reasoning/actions/workflows/tests.yml)
+
 # coconut-latent-reasoning
 
 A small reimplementation of Coconut from [Training Large Language Models to Reason in a Continuous Latent Space](https://arxiv.org/abs/2412.06769) (Hao et al., 2024). Instead of a pretrained LLM, it uses a 3-layer, 64-dim GPT trained from scratch on a synthetic multi-step arithmetic task. In Coconut, the model's last hidden state goes straight back in as the next input embedding, so it can take reasoning steps without writing them out as tokens.
