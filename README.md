@@ -55,3 +55,8 @@ python -m pytest -q
 ```
 
 The tests check that the synthetic problems and CoT values match an independent evaluator, and that each latent slot holds exactly the hidden state from the position before it. They recompute that hidden state without the cache, check that it isn't a token embedding, and check that the `<lat>` embedding gets no gradient. They also check that `--quick` runs end to end.
+
+
+## Engineering notes
+
+[Read the implementation walkthrough](docs/engineering.md).
