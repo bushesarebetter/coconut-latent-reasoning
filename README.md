@@ -1,16 +1,22 @@
-[![Tests](https://github.com/bushesarebetter/coconut-latent-reasoning/actions/workflows/tests.yml/badge.svg)](https://github.com/bushesarebetter/coconut-latent-reasoning/actions/workflows/tests.yml)
+# Coconut: reasoning in continuous latent space
 
-# coconut-latent-reasoning
+[![Tests](https://github.com/bushesarebetter/coconut-latent-reasoning/actions/workflows/tests.yml/badge.svg)](https://github.com/bushesarebetter/coconut-latent-reasoning/actions/workflows/tests.yml)
 
 A small reimplementation of Coconut from [Training Large Language Models to Reason in a Continuous Latent Space](https://arxiv.org/abs/2412.06769) (Hao et al., 2024). Instead of a pretrained LLM, it uses a 3-layer, 64-dim GPT trained from scratch on a synthetic multi-step arithmetic task. In Coconut, the model's last hidden state goes straight back in as the next input embedding, so it can take reasoning steps without writing them out as tokens.
 
+[Task](#task) · [Training variants](#training-variants) · [Setup](#setup) · [Run](#run) · [Results](#results) · [Changes from the paper](#changes-from-the-paper) · [Test](#test) · [Engineering notes](docs/engineering.md)
+
+## Task
+
 Each example is a chain of 4 operations mod 10:
 
-```
+```text
 question:  k = 7 ; q = k * 3 ; b = q + 8 ; x = b - 4 ; m = x * 6 ; ? m
 CoT:       <bot> 1 9 5 <eot> # 0 <eos>
 Coconut:   <bot> [h] [h] [h] <eot> # 0 <eos>
 ```
+
+## Training variants
 
 I train three variants:
 
@@ -20,13 +26,13 @@ I train three variants:
 
 ## Setup
 
-```
+```bash
 pip install -r requirements.txt
 ```
 
 ## Run
 
-```
+```bash
 python coconut.py          # full run, about 13 min on my CPU while it was busy with other jobs
 python coconut.py --quick  # a few seconds, smoke test only
 ```
@@ -43,6 +49,8 @@ All three variants get the same 4000 optimizer steps (batch 64, fresh samples ev
 
 Without intermediate steps the model is barely above chance (10%). Written CoT solves the task completely. Coconut does just as well (99.3%, 100%, 99.7% after stages 1–3) while writing only `<eot> # answer <eos>`, so all of the intermediate values are carried in hidden states.
 
+## Changes from the paper
+
 I had to change two things from the paper before this worked:
 
 - In intermediate stages, the remaining written steps sit before `<eot>` (`<bot> [h] 9 5 <eot> # 0`), so CoT is literally stage 0 and every thought replaces a token at the same position. The final stage is the paper's format.
@@ -50,13 +58,14 @@ I had to change two things from the paper before this worked:
 
 ## Test
 
+Install pytest separately from the runtime dependencies:
+
+```bash
+python -m pip install pytest
 ```
+
+```bash
 python -m pytest -q
 ```
 
 The tests check that the synthetic problems and CoT values match an independent evaluator, and that each latent slot holds exactly the hidden state from the position before it. They recompute that hidden state without the cache, check that it isn't a token embedding, and check that the `<lat>` embedding gets no gradient. They also check that `--quick` runs end to end.
-
-
-## Engineering notes
-
-[Read the implementation walkthrough](docs/engineering.md).
